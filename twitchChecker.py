@@ -56,8 +56,8 @@ def listStreams():
 
 def loadStream(channelNumber):
 	popen = doLoadStream(channelNumber)
-	time.sleep(.5);
-	if(popen.poll != None):
+	time.sleep(3)
+	if(popen.poll() != None):
 		print "best stream not available, falling back to 720p60"
 		doLoadStream(channelNumber, "720p60")
 
