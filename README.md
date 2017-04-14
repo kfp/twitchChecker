@@ -8,5 +8,5 @@ Usage: twitchChecker.py
 	Channels are loaded one per line from channels.txt
   
 	livestreamer required for video  http://docs.livestreamer.io/
-  chatty required for chat http://chatty.github.io/
+  	chatty required for chat http://chatty.github.io/
   
