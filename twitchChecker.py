@@ -6,9 +6,9 @@ from prettytable import PrettyTable
 #newline seperated channels
 TwitchChannels = [line.rstrip('\n') for line in open('channels.txt')]
 DEVNULL = open(os.devnull, 'wb')
-CLIENT_ID = 'ae5gdyajcqmlrcafcwjqzlfbs1botlr'
+TWITCHCHECKER_CLIENT_ID = 'ae5gdyajcqmlrcafcwjqzlfbs1botlr'
 LIVESTREAMER_CLIENT_ID = 'ewvlchtxgqq88ru9gmfp1gmyt6h2b93'
-QUALITIES = ['1080p60', '720p60', 'source', 'best']
+QUALITY_PRIORITIES = ['1080p60', '720p60', 'source', 'best']
 
 def getTwitchData(): 
 	channels = ','.join([str(x) for x in TwitchChannels])
@@ -17,7 +17,7 @@ def getTwitchData():
 	data = None
 	try:
                 req = urllib2.Request(url)
-                req.add_header('Client-ID',CLIENT_ID)
+                req.add_header('Client-ID',TWITCHCHECKER_CLIENT_ID)
 		respose = urllib2.urlopen(req)
 	except:
 		return None
@@ -56,7 +56,7 @@ def listStreams():
 	print t
 
 def loadStream(channelNumber):
-	for quality in QUALITIES:
+	for quality in QUALITY_PRIORITIES:
 		popen = doLoadStream(channelNumber, quality)
 		time.sleep(3)
 		if(popen.poll() != None):
@@ -77,11 +77,22 @@ def doLoadChat(channelNumber):
 	logfile = open("chatOut.log", 'w');
 	return subprocess.Popen(execList, stdout=DEVNULL, stderr=logfile)
 
+def usage():
+		print '''
+Usage: '''+ sys.argv[0] + ''' 
+	[-l list available channels]
+	[-o <id> load specified video channel ID]
+	[-c <id> list specified chat channel ID]
+	Channels are loaded one per line from channels.txt
+	livestreamer required for video, chatty required for chat
+				'''	
+
 def main(argv):
 	try:
-		opts, args = getopt.getopt(argv,"lo:c:")
-	except getopt.GetoptError:
-		print 'twitchChecker.py -l/ -o #/ -c #'
+		opts, args = getopt.getopt(argv,"hlo:c:")
+	except getopt.GetoptError as err:
+		print(err)
+		usage()
 		sys.exit(2)
 	for opt, arg in opts:
 		if opt == '-l':
@@ -90,6 +101,8 @@ def main(argv):
 			loadStream(int(arg))
 		elif opt == '-c':
 			doLoadChat(int(arg))
+		elif opt == '-h':
+			usage()
 
 if __name__ == "__main__":
 	main(sys.argv[1:])
