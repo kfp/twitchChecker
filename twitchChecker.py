@@ -68,7 +68,6 @@ def loadStream(channelNumber):
 def doLoadStream(channelNumber, quality="best"):
 	execList = ["livestreamer",'--http-header', 'Client-ID='+LIVESTREAMER_CLIENT_ID,'twitch.tv/'+TwitchChannels[channelNumber], quality]
 	print 'Loading stream... '+ ' '.join(execList)
-	#subprocess.Popen(["livestreamer",'twitch.tv/'+TwitchChannels[channelNumber],"best"], stdout=DEVNULL, stderr=DEVNULL)
 	logfile = open("streamOut.log", 'w');
 	return subprocess.Popen(execList, stdout=logfile, stderr=logfile)
 
