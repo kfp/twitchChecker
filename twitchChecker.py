@@ -5,6 +5,7 @@ from prettytable import PrettyTable
 #TwitchChannels = ['yourchannel']
 ## newline seperated channels
 TwitchChannels = [line.rstrip('\n') for line in open('channels.txt')]
+
 DEVNULL = open(os.devnull, 'wb')
 TWITCHCHECKER_CLIENT_ID = 'ae5gdyajcqmlrcafcwjqzlfbs1botlr'
 LIVESTREAMER_CLIENT_ID = 'ewvlchtxgqq88ru9gmfp1gmyt6h2b93'
