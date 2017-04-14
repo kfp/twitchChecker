@@ -8,6 +8,7 @@ TwitchChannels = [line.rstrip('\n') for line in open('channels.txt')]
 DEVNULL = open(os.devnull, 'wb')
 CLIENT_ID = 'ae5gdyajcqmlrcafcwjqzlfbs1botlr'
 LIVESTREAMER_CLIENT_ID = 'ewvlchtxgqq88ru9gmfp1gmyt6h2b93'
+QUALITIES = ['1080p60', '720p60', 'source', 'best']
 
 def getTwitchData(): 
 	channels = ','.join([str(x) for x in TwitchChannels])
@@ -55,30 +56,40 @@ def listStreams():
 	print t
 
 def loadStream(channelNumber):
-	popen = doLoadStream(channelNumber)
-	time.sleep(3)
-	if(popen.poll() != None):
-		print "best stream not available, falling back to 720p60"
-		doLoadStream(channelNumber, "720p60")
+	for quality in QUALITIES:
+		popen = doLoadStream(channelNumber, quality)
+		time.sleep(3)
+		if(popen.poll() != None):
+			print quality +" stream not available. Falling back..."
+		else:
+			return
 
 def doLoadStream(channelNumber, quality="best"):
 	execList = ["livestreamer",'--http-header', 'Client-ID='+LIVESTREAMER_CLIENT_ID,'twitch.tv/'+TwitchChannels[channelNumber], quality]
 	print 'Loading stream... '+ ' '.join(execList)
 	#subprocess.Popen(["livestreamer",'twitch.tv/'+TwitchChannels[channelNumber],"best"], stdout=DEVNULL, stderr=DEVNULL)
-	logfile = open("out.log", 'w');
+	logfile = open("streamOut.log", 'w');
 	return subprocess.Popen(execList, stdout=logfile, stderr=logfile)
+
+def doLoadChat(channelNumber):
+	execList = ["Chatty", '-connect', '-channel', ''+TwitchChannels[channelNumber]]
+	print 'Loading chat... '+ ' '.join(execList)
+	logfile = open("chatOut.log", 'w');
+	return subprocess.Popen(execList, stdout=DEVNULL, stderr=logfile)
 
 def main(argv):
 	try:
-		opts, args = getopt.getopt(argv,"lo:")
+		opts, args = getopt.getopt(argv,"lo:c:")
 	except getopt.GetoptError:
-		print 'twitchChecker.py -l/ -o #'
+		print 'twitchChecker.py -l/ -o #/ -c #'
 		sys.exit(2)
 	for opt, arg in opts:
 		if opt == '-l':
 			listStreams()
 		elif opt == '-o':
 			loadStream(int(arg))
+		elif opt == '-c':
+			doLoadChat(int(arg))
 
 if __name__ == "__main__":
 	main(sys.argv[1:])
