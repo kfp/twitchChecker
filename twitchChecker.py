@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import urllib2, json, sys, getopt, subprocess, os, time
 from termcolor import colored
 from prettytable import PrettyTable
@@ -9,10 +11,9 @@ TwitchChannels = [line.rstrip('\n') for line in open('channels.txt')]
 DEVNULL = open(os.devnull, 'wb')
 TWITCHCHECKER_CLIENT_ID = 'ae5gdyajcqmlrcafcwjqzlfbs1botlr'
 LIVESTREAMER_CLIENT_ID = 'ewvlchtxgqq88ru9gmfp1gmyt6h2b93'
-QUALITY_PRIORITIES = ['1080p60', '720p60', 'source', 'best']
+QUALITY_PRIORITIES = ['1080p60', '1080p', '720p60', 'source', 'best']
 
-def getTwitchData(): 
-	channels = ','.join([str(x) for x in TwitchChannels])
+def getTwitchData(channels):
 	url = 'https://api.twitch.tv/kraken/streams?channel='+channels
 	viewers = -1
 	data = None
@@ -39,7 +40,7 @@ def listStreams():
 	t.sortby = "Viewers"
 	t.reversesort = True
 	t.align['Title'] = "l"
-	twitchData = getTwitchData()
+	twitchData = getTwitchData(channels = ','.join([str(x) for x in TwitchChannels]))
 	for channel in TwitchChannels:
 		color = 'green'
 		viewers = 0
@@ -57,16 +58,20 @@ def listStreams():
 	print t
 
 def loadStream(channelNumber):
+	channel = TwitchChannels[channelNumber]
+	#channelData = getChannelData(getTwitchData(channel), channel)
+
 	for quality in QUALITY_PRIORITIES:
-		popen = doLoadStream(channelNumber, quality)
+		popen = doLoadStream(channel, quality)
 		time.sleep(3)
 		if(popen.poll() != None):
 			print quality +" stream not available. Falling back..."
 		else:
+                        popen.poll() #fixes some race condition somehow
 			return
 
-def doLoadStream(channelNumber, quality="best"):
-	execList = ["livestreamer",'--http-header', 'Client-ID='+LIVESTREAMER_CLIENT_ID,'twitch.tv/'+TwitchChannels[channelNumber], quality]
+def doLoadStream(channel, quality="best"):
+	execList = ["livestreamer",'--http-header', 'Client-ID='+LIVESTREAMER_CLIENT_ID,'twitch.tv/'+channel, quality]
 	print 'Loading stream... '+ ' '.join(execList)
 	logfile = open("streamOut.log", 'w');
 	return subprocess.Popen(execList, stdout=logfile, stderr=logfile)
@@ -79,13 +84,13 @@ def doLoadChat(channelNumber):
 
 def usage():
 		print '''
-Usage: '''+ sys.argv[0] + ''' 
+Usage: '''+ sys.argv[0] + '''
 	[-l list available channels]
 	[-o <id> load specified video channel ID]
 	[-c <id> list specified chat channel ID]
 	Channels are loaded one per line from channels.txt
 	livestreamer required for video, chatty required for chat
-				'''	
+				'''
 
 def main(argv):
 	try:
